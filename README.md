@@ -124,3 +124,4 @@ Existing copyrighted promotional posters are used for a private educational demo
 - Dune: Part Two: https://www.zachhammill.com/moviefriend/dune-part-two-review
 - Interstellar: https://www.omelete.com.br/interstellar/interestelar/interstellar-filme-de-christopher-nolan-ganha-jogo-para-pc-e-smartphones
 - The Batman: https://www.rottentomatoes.com/m/the_batman
+# CineBook-DevOps
