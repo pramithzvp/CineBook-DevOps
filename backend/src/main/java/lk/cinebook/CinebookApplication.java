@@ -8,6 +8,6 @@ import org.springframework.web.servlet.config.annotation.*;
 public class CinebookApplication {
  public static void main(String[] args) { SpringApplication.run(CinebookApplication.class,args); }
  @Bean WebMvcConfigurer cors(@Value("${cinebook.allowed-origin}") String origin) {
-  return new WebMvcConfigurer(){public void addCorsMappings(CorsRegistry registry){registry.addMapping("/api/**").allowedOrigins(origin).allowedMethods("GET","POST").allowedHeaders("Content-Type");}};
+  return new WebMvcConfigurer(){public void addCorsMappings(CorsRegistry registry){registry.addMapping("/api/**").allowedOrigins(origin,"http://localhost:5173").allowedMethods("GET","POST","PUT","DELETE").allowedHeaders("Content-Type");}};
  }
 }

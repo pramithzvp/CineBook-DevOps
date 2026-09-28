@@ -46,6 +46,17 @@ next-env.d.ts
 /work/
 
 backend/target/
+backend/.env
+backend/.env.local
+backend/application-local.properties
+application-local.properties
+.idea/
+.vscode/
+.env
+.env.local
+node_modules/
+.next/
+dist/
 
 *.tsbuildinfo
 !.env.example
