@@ -8,7 +8,7 @@ export type Movie=typeof MOVIES[number];
 export type Profile={name:string;email:string};
 export type Booking={id:string;movieId:string;date:string;time:string;cinema:string;seats:string[];name:string;email?:string;total:number;cancelled?:boolean;mode:'demo'|'api';createdAt:string;owner:string};
 export type Show={movieId:string;date:string;time:string;cinema:string};
-export const API=process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/,'')||'';
+export const API=process.env.NEXT_PUBLIC_BOOKING_API_ENABLED==='true'?(process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/,'')||''):'';
 export const BOOKING_FEE=100;
 export const DEMO_OCCUPIED=['C3','C4','D5','D6','F2','F3'];
 export const money=(value:number)=>'LKR '+value.toLocaleString('en-LK');
