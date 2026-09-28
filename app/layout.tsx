@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Film } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <a className="text-button px-[5.5%] pt-2" href="/movie-catalogue">
+          <Film size={16} /> Movie API catalogue
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
