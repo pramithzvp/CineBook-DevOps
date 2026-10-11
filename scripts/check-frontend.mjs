@@ -2,13 +2,15 @@
 import {readFileSync} from 'node:fs';
 import {strict as assert} from 'node:assert';
 import ts from 'typescript';
-const source=ts.transpileModule(readFileSync(new URL('../lib/cinebook.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const source=ts.transpileModule(readFileSync(new URL('../lib/cinebook.ts',import.meta.url),'utf8').replace("import {CINEMA_LISTINGS} from './cinema-listings';",readFileSync(new URL('../lib/cinema-listings.ts',import.meta.url),'utf8')),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const app=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const tests=[];
 function check(name,fn){fn();tests.push(name);}
 check('Filter preserves each film’s original hall',()=>assert.equal(app.filterMovies('batman','all','all','featured')[0].hall,3));
 check('Genre and format filters combine',()=>assert.deepEqual(app.filterMovies('','Sci-fi','2D','featured').map(m=>m.id),['interstellar']));
-check('Price sorting is ascending',()=>assert.deepEqual(app.filterMovies('','all','all','price').map(m=>m.price),[1500,1800,2200]));
+check('Price sorting is ascending',()=>{const prices=app.filterMovies('','all','all','price').map(m=>m.price);assert.ok(prices.every((p,i,a)=>i===0||a[i-1]<=p));assert.equal(prices[0],1500);assert.equal(prices[prices.length-1],2200);});
+check('Seat tiers surcharge calculation',()=>{assert.equal(app.getSeatTier('A1'),'VIP');assert.equal(app.getSeatTier('C4'),'Premium');assert.equal(app.getSeatTier('G2'),'Standard');assert.equal(app.calculateSeatsPrice(['A1','C4','G2'],1500),1500+600+1500+250+1500);});
+check('Promo codes discount logic',()=>{const d1=app.calculatePromoDiscount('CINE10',4000,1000);assert.equal(d1.valid,true);assert.equal(d1.discount,400);const d2=app.calculatePromoDiscount('STUDENT',2000,500);assert.equal(d2.valid,true);assert.equal(d2.discount,300);const d3=app.calculatePromoDiscount('INVALID',2000,500);assert.equal(d3.valid,false);});
 check('Adjacent seats never cross the aisle',()=>{for(let n=1;n<=4;n++){const seats=app.suggestSeats([],n);assert.equal(seats.length,n);const nums=seats.map(s=>Number(s.slice(1)));assert.ok(nums.every(x=>x<=4)||nums.every(x=>x>=5));}});
 check('A full hall returns no suggestion',()=>assert.deepEqual(app.suggestSeats('ABCDEFGH'.split('').flatMap(r=>Array.from({length:8},(_,i)=>r+(i+1))),2),[]));
 check('Sri Lanka showtime cutoff',()=>{const now=Date.parse('2026-09-22T13:30:00Z');assert.equal(app.showStarted('2026-09-22','19:00',now),true);assert.equal(app.showStarted('2026-09-22','19:01',now),false);});

@@ -7,8 +7,9 @@ import java.util.*;
 @RequestMapping("/api")
 public class BookingController {
  private final BookingService service;
- public BookingController(BookingService service){this.service=service;}
- @GetMapping("/health") public Map<String,String> health(){return Map.of("status","ok");}
+ private final org.springframework.jdbc.core.JdbcTemplate database;
+ public BookingController(BookingService service, org.springframework.jdbc.core.JdbcTemplate database){this.service=service;this.database=database;}
+ @GetMapping("/health") public Map<String,String> health(){database.queryForObject("SELECT 1",Integer.class);return Map.of("application","CineBook","status","ok","database","UP");}
  @GetMapping("/availability") public Map<String,Object> availability(@RequestParam String movieId,@RequestParam String date,@RequestParam String time,@RequestParam String cinema){return Map.of("seats",service.availability(movieId,date,time,cinema));}
  @PostMapping("/bookings") public ResponseEntity<Map<String,Object>> book(@Valid @RequestBody BookingRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(service.book(r));}
 }

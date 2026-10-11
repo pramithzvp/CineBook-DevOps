@@ -60,3 +60,6 @@ dist/
 
 *.tsbuildinfo
 !.env.example
+
+# Generated source download
+/public/cinebook-source.zip

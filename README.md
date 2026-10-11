@@ -1,121 +1,109 @@
-# CineBook — Frontend v2
+# CineBook
 
-A complete interactive React frontend demonstration for cinema seat booking. Existing Spring Boot/MySQL booking source is retained in `backend/`.
+Cinema discovery and seat-booking frontend with a Spring Boot / MySQL backend.
 
-## Run in VS Code
+## Local setup
 
-Download the latest `cinebook-source.zip`, extract it into a new folder and open `cinebook` (the folder containing `package.json`) in VS Code. Requires Node.js 22.13+ and pnpm; the pinned manager version is in `package.json`.
+Requires Node.js 22.13+, pnpm, Java 17+ (verified with Java 21), Maven and MySQL.
 
 ```sh
-corepack enable
-pnpm install
-pnpm dev
+git clone https://github.com/pramithzvp/CineBook-DevOps.git
+cd CineBook-DevOps
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+cp backend/.env.example backend/.env.local
 ```
 
-Open the local address printed in the terminal. Leave `NEXT_PUBLIC_API_BASE` empty for the full frontend demo; no MySQL or Java is needed in this mode. If Corepack is not installed with your Node distribution, install pnpm through its supported setup path.
+Create the database and a dedicated account in MySQL. Replace the example password:
 
-The comprehensive illustrated-by-tables feature guide is `public/frontend-guide.html`. Open it locally in a browser, or use Project guide in the website footer. It includes English/Sinhala setup notes, a feature matrix, walkthrough, storage rules, code map and integration boundaries. The guide can be printed to PDF with the browser.
+```sql
+CREATE DATABASE IF NOT EXISTS cinebook_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'cinebook'@'localhost' IDENTIFIED BY 'YOUR_LOCAL_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+ON cinebook_db.* TO 'cinebook'@'localhost';
+```
 
-## Completed frontend features
+Put your credentials in `backend/.env.local`. This file and the root `.env.local`
+are ignored by Git; each collaborator supplies their own local configuration.
+If Maven or Java is not on PATH, set `MAVEN_BIN` or `JAVA_HOME` in that file.
+Optional `MAVEN_REPO_LOCAL` selects a writable Maven cache.
 
-- Dark/light themes, synchronized header/profile toggles, persisted device preference.
-- Movie search, genre/format filters, title/price/runtime sorting, result counts and reset.
-- Movie detail dialog, synopsis, pricing, language, stable hall numbers and showtimes.
-- Saved-film watchlist with persistent device-local preferences.
-- Cinema guide, screen formats and preferred cinema.
-- Seven-day Sri Lanka schedule; past shows disabled and next-day fallback.
-- Accessible 64-seat map, 1–8 seat limit, live totals, clear selection and 1–4 adjacent-seat suggestions that respect the aisle.
-- Three-step checkout, guest contact details, optional demo-profile autofill and confirmation.
-- Detailed text ticket, browser print/PDF controls and calendar `.ics` download.
-- Tab-local booking history, search, statuses, counts and upcoming demo cancellation that releases seats.
-- Login/register frontend, validation, password visibility, duplicate-email checks, demo profile editing and logout.
-- Help FAQ, toasts, retry/error/empty states, keyboard focus, responsive layout and reduced-motion support.
+From the repository root, use separate terminals:
 
-## Demo accounts and data
+```sh
+pnpm backend:dev
+```
 
-Use **Log in → Try the demo account**, or use `demo@cinebook.lk` / `CineBook123!` in the demo form. New accounts require a test name/email and a password of 8+ characters including uppercase, lowercase and a number, with matching confirmation.
+```sh
+pnpm dev:local
+```
 
-**This is frontend-only demo login, not secure authentication.** Use sample details, never real passwords. New account passwords exist only in React memory until refresh; no passwords are written to localStorage/sessionStorage or sent to a server. Logging in is not a security boundary and does not protect bookings. All reservations in this tab are visible regardless of demo profile.
+Open http://localhost:3000. The example environment uses the API at
+http://localhost:8081 to avoid conflicts with other applications on port 8080.
+The health endpoint at `/api/health` identifies CineBook and checks MySQL.
+The backend launcher loads `backend/.env.local` automatically. Plain Maven does
+not load that file; when using Maven directly, export the environment variables.
 
-Theme, watchlist IDs and preferred cinema use localStorage. Reservation receipts/cancellations use sessionStorage and survive refresh in the same tab when storage is available. Closing the tab can clear this data; download tickets to keep them. Demo seat availability is not synchronized across tabs or devices. Accounts/profile and unfinished selections reset on refresh.
+`dev:local` uses Next.js/Webpack and enables polling in the macOS Codex sandbox.
+The existing `pnpm dev`, `pnpm build` and `pnpm start` commands use the
+Vinext/Cloudflare workflow. For slow dependency downloads:
 
-The hosted version does not collect payments, send emails, create real accounts or reserve real cinema seats. Venues/showtimes are sample data. Cancellation is frontend-demo-only; API-backed cancellation has no control because the existing backend does not implement it.
+```sh
+pnpm install --frozen-lockfile --fetch-timeout=600000 --network-concurrency=4
+```
 
-## Source map
+## Features and integration status
 
-| File | Purpose |
-| --- | --- |
-| `app/page.tsx` | App navigation, catalogue, filters, watchlist, cinema guide, profile and history |
-| `app/globals.css` | Theme tokens, responsive styling and print styles |
-| `lib/cinebook.ts` | Movie data, prices, types, booking/date/filter rules, API client and file exports |
-| `components/cinebook/auth-dialog.tsx` | Temporary demo login/register forms |
-| `components/cinebook/booking-dialog.tsx` | Seat, contact, review and booking flow |
-| `components/cinebook/ticket-view.tsx` | Reusable receipt and export actions |
-| `public/frontend-guide.html` | Full user/developer guide |
-| `scripts/check-frontend.mjs` | Focused frontend rule checks |
-| `scripts/export-source.py` | Rebuild complete source download |
-| `backend/` | Existing Spring Boot and MySQL source |
+- Expanded movie collection, cinema listings, posters, search, filters and watchlists.
+- Dark/light themes, seat tiers, sample seat selection, promotions and ticket/QR views.
+- MySQL-backed registration, BCrypt password hashing, login, session restore and logout.
+- Movie REST API; the frontend uses sample movies if the movie service is unavailable.
+- Booking API with server-side prices and transactional duplicate-seat protection.
 
-## Frontend validation
+Keep `NEXT_PUBLIC_BOOKING_API_ENABLED=false`. The reference frontend uses a
+show/session/history booking contract that differs from this backend's
+movie/date/time contract. The frontend booking flow is still a demo; authentication
+and the movie catalogue are connected to MySQL. Payments and email delivery are
+not integrated. Cinema listings and showtimes are sample/reference data, not a
+live inventory feed.
+
+Theme, watchlist and cinema preferences are stored locally in the browser.
+Demo receipts use sessionStorage. Account sessions use the HttpOnly
+`CINEBOOK_SESSION` cookie, separate from other localhost applications.
+
+## Validation
 
 ```sh
 pnpm exec tsc --noEmit
 node scripts/check-frontend.mjs
 pnpm build
+pnpm backend:test
 ```
 
-The rule checks cover stable hall mapping, combined filters, sorting, adjacent-seat constraints, a full hall, Sri Lanka showtime cutoff, cancellation release, cinema isolation, malformed restored data, password requirements and cancelled-ticket labels.
+The frontend has 13 focused checks. The backend has 8 automated tests using H2.
+Real-MySQL smoke checks also verified registration, login, session/logout,
+movie retrieval, booking creation, pricing and duplicate-seat rollback.
+Temporary smoke-test records were removed afterward.
 
-## Connect the booking API
+## Collaboration
 
-To use the existing API locally, run Spring Boot separately and set root `.env.local`:
+Pull the latest changes before starting work, use a feature branch, and open a
+pull request for review. Commit source and environment examples; keep passwords,
+local configuration, dependency folders, build outputs and database files local.
+MySQL records are not transferred through Git; each developer configures their
+own database. The schema is initialized at backend startup; movie data is not seeded.
 
-```dotenv
-NEXT_PUBLIC_API_BASE=http://localhost:8080
-```
+## Source map
 
-Restart the frontend. For a hosted frontend, configure an HTTPS API base before build, and match backend `FRONTEND_ORIGIN` to the actual frontend origin. Availability uses `GET /api/availability`; creation uses `POST /api/bookings`. Authentication remains demo-only even if this booking API is connected. Never trust the demo profile as authenticated identity.
+- `app/`: pages, layout and frontend styles.
+- `components/cinebook/`: auth, seats, booking and ticket views.
+- `lib/`: frontend models, API clients, cinema listings and QR helpers.
+- `src/services/movieService.js`: movie API client.
+- `backend/`: Spring Boot application, schema and tests.
+- `scripts/`: local launchers, frontend checks and source export.
 
-## Run MySQL + Spring Boot
-
-Requires Java 17+, Maven 3.6.3+ and MySQL 8+. Create a dedicated database and user in MySQL (choose your own password):
-
-```sql
-CREATE DATABASE cinebook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'cinebook'@'localhost' IDENTIFIED BY 'REPLACE_WITH_YOUR_PASSWORD';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, REFERENCES ON cinebook.* TO 'cinebook'@'localhost';
-```
-
-In a terminal:
-
-```sh
-cd backend
-export DB_PASSWORD='REPLACE_WITH_YOUR_PASSWORD'
-export FRONTEND_ORIGIN='http://localhost:3000'
-mvn spring-boot:run
-```
-
-Use the actual frontend origin printed by the development server if different. Database defaults: `jdbc:mysql://localhost:3306/cinebook`, user `cinebook`. Override `DB_URL`, `DB_USER`, `DB_PASSWORD` when needed. Tables initialize from `src/main/resources/schema.sql`. The server defaults to loopback; a separately managed deployment can set `SERVER_ADDRESS=0.0.0.0` behind TLS and suitable access controls.
-
-## API
-
-- `GET /api/health`
-- `GET /api/availability?movieId=dune&date=YYYY-MM-DD&time=19:00&cinema=colombo`
-- `POST /api/bookings` — JSON `movieId`, `date`, `time`, `cinema`, `seats` array, `name`, `email`.
-
-The response contains the booking ID, selected show and seats, guest name and total in LKR. Rates: Dune 2200; Interstellar 1500; Batman 1800; booking fee 100 per seat. All prices are calculated again on the server. Date validation uses Asia/Colombo. The composite seat primary key plus transaction rollback prevents duplicate reservations. The API never provides a public guest/email listing.
-
-## Backend verification limitation
-
-Spring Boot/MySQL was not run here. Maven was unavailable and could not be downloaded during the original delivery. Included backend tests cover pricing, availability, duplicate seats, past dates and rollback on a conflicting reservation. Run `mvn test` in `backend`; verify against real MySQL separately. Backend account authentication, account-scoped history, profile management, cancellation, payment and email integration remain future work.
-
-## Update the downloadable ZIP
-
-```sh
-python3 scripts/export-source.py
-```
-
-The archive includes standalone configuration without the hosted project identity, all source assets and backend code. It excludes credentials, installed dependencies and generated build output.
+`python3 scripts/export-source.py` creates a downloadable source ZIP while
+excluding local secrets and generated output.
 
 ## Poster credits
 
@@ -124,5 +112,5 @@ Existing copyrighted promotional posters are used for a private educational demo
 - Dune: Part Two: https://www.zachhammill.com/moviefriend/dune-part-two-review
 - Interstellar: https://www.omelete.com.br/interstellar/interestelar/interstellar-filme-de-christopher-nolan-ganha-jogo-para-pc-e-smartphones
 - The Batman: https://www.rottentomatoes.com/m/the_batman
-# CineBook-DevOps
-# CineBook-DevOps
+
+Additional reference posters and cinema listings were carried over from the supplied CineBook-Frontend project. No additional image licence verification was performed.
