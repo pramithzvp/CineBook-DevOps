@@ -63,3 +63,8 @@ dist/
 
 # Generated source download
 /public/cinebook-source.zip
+
+!.env.docker.example
+backups/
+*.sql.gz
+*.dump

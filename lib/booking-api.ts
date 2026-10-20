@@ -1,6 +1,6 @@
 import {Booking} from './cinebook';
 export const BOOKING_API_ENABLED = process.env.NEXT_PUBLIC_BOOKING_API_ENABLED === 'true';
-export const BOOKING_API = (process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080').replace(/\/$/,'') + '/api';
+export const BOOKING_API = (process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:8080').replace(/\/$/,'') + '/api';
 export type ApiShow = {id:string;date:string;time:string;hall:string;basePrice:number;bookingFee:number};
 export type ApiSeat = {label:string;price:number;available:boolean};
 export class ApiError extends Error {constructor(message:string,public status:number){super(message);}}

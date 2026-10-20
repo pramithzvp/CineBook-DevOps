@@ -1,4 +1,4 @@
-const baseUrl = (process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080").replace(/\/+$/, "");
+const baseUrl = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080").replace(/\/+$/, "");
 const moviesUrl = `${baseUrl}/api/movies`;
 
 async function request(path = "", options = {}) {

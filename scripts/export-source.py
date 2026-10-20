@@ -8,7 +8,7 @@ files=set()
 for d in directories:
  for p in (root/d).rglob('*'):
   if p.is_file() and not any(x in {'target','node_modules','__pycache__'} for x in p.relative_to(root).parts) and p!=out and not (p.name.startswith('.env') and p.name!='.env.example') and p.name not in {'application-local.properties','.DS_Store'}: files.add(p)
-for pattern in ['*.json','*.ts','*.mjs','*.yaml','README.md','.gitignore','.env.example']:
+for pattern in ['*.json','*.ts','*.mjs','*.yaml','README.md','.gitignore','.dockerignore','Dockerfile','.env.example','.env.docker.example']:
  files.update(p for p in root.glob(pattern) if p.is_file() and p.name!='tsconfig.tsbuildinfo')
 with ZipFile(out,'w',ZIP_DEFLATED) as z:
  z.writestr('cinebook/.openai/hosting.json', '{"d1":null,"r2":null}\n')

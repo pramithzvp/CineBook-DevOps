@@ -48,7 +48,7 @@ export default function MovieCataloguePage() {
           <h1>Movie library<span>.</span></h1>
           <p>Titles loaded from the CineBook movie service.</p>
         </div>
-        <div className="programme-label"><span>LIVE API</span><p>Connected to localhost:8080</p></div>
+        <div className="programme-label"><span>LIVE API</span><p>CineBook movie service</p></div>
       </section>
 
       {loading ? (
