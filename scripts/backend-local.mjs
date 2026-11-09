@@ -14,7 +14,13 @@ if (command === "run" && (!process.env.DB_USERNAME && !process.env.DB_USER || !p
 const args = ["--batch-mode", "--no-transfer-progress", "-f", "backend/pom.xml"];
 if (process.env.MAVEN_REPO_LOCAL) args.push(`-Dmaven.repo.local=${process.env.MAVEN_REPO_LOCAL}`);
 args.push(command === "run" ? "spring-boot:run" : command);
-const child = spawn(process.env.MAVEN_BIN || "mvn", args, { cwd: root, stdio: "inherit", env: process.env });
+// Maven is a .cmd wrapper on Windows, so Node needs a shell to launch it.
+const child = spawn(process.env.MAVEN_BIN || "mvn", args, {
+  cwd: root,
+  stdio: "inherit",
+  env: process.env,
+  shell: process.platform === "win32",
+});
 child.on("error", error => { console.error(`Cannot launch Maven: ${error.message}. Install Maven or set MAVEN_BIN in backend/.env.local.`); process.exitCode = 1; });
 child.on("exit", code => { process.exitCode = code ?? 1; });
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => child.kill(signal));
