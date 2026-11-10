@@ -13,8 +13,8 @@ class BookingServiceTest {
  @Autowired JdbcTemplate db;
  String date=LocalDate.now(ZoneId.of("Asia/Colombo")).plusDays(1).toString();
  BookingRequest request(List<String> seats){return new BookingRequest("dune",date,"19:00","colombo",seats,"Test Guest","test@example.com");}
- @BeforeEach void clear(){db.update("DELETE FROM reserved_seats");db.update("DELETE FROM bookings");}
- @Test void correctPriceAndSeatAvailability(){var b=service.book(request(List.of("A1","A2")));assertEquals(4600,b.get("total"));assertEquals(List.of("A1","A2"),service.availability("dune",date,"19:00","colombo"));}
- @Test void seatConflictRollsBackWholeBooking(){service.book(request(List.of("A2")));assertThrows(DataIntegrityViolationException.class,()->service.book(request(List.of("A1","A2"))));assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM bookings",Integer.class));assertEquals(List.of("A2"),service.availability("dune",date,"19:00","colombo"));}
- @Test void rejectsDuplicatesAndPastDates(){assertThrows(IllegalArgumentException.class,()->service.book(request(List.of("A1","A1"))));assertThrows(IllegalArgumentException.class,()->service.validateShow("dune","2020-01-01","19:00","colombo"));}
+ @BeforeEach void clear(){db.update("DELETE FROM booking_owners");db.update("DELETE FROM reserved_seats");db.update("DELETE FROM bookings");}
+ @Test void correctPriceAndSeatAvailability(){var b=service.book(request(List.of("A1","A2")),"test-owner");assertEquals(4600,b.get("total"));assertEquals(List.of("A1","A2"),service.availability("dune",date,"19:00","colombo"));}
+ @Test void seatConflictRollsBackWholeBooking(){service.book(request(List.of("A2")),"test-owner");assertThrows(DataIntegrityViolationException.class,()->service.book(request(List.of("A1","A2")),"test-owner"));assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM bookings",Integer.class));assertEquals(List.of("A2"),service.availability("dune",date,"19:00","colombo"));}
+ @Test void rejectsDuplicatesAndPastDates(){assertThrows(IllegalArgumentException.class,()->service.book(request(List.of("A1","A1")),"test-owner"));assertThrows(IllegalArgumentException.class,()->service.validateShow("dune","2020-01-01","19:00","colombo"));}
 }
