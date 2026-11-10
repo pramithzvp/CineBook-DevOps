@@ -8,7 +8,7 @@ RUN pnpm install --frozen-lockfile
 FROM dependencies AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILD=true
-ENV NEXT_PUBLIC_API_BASE="" NEXT_PUBLIC_BOOKING_API_ENABLED=false
+ENV NEXT_PUBLIC_API_BASE="" NEXT_PUBLIC_BOOKING_API_ENABLED=true
 RUN pnpm build:docker
 
 FROM node:24-bookworm-slim AS runtime
