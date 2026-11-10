@@ -19,3 +19,12 @@ CREATE TABLE IF NOT EXISTS reserved_seats (
  PRIMARY KEY (movie_id, show_date, show_time, cinema, seat),
  FOREIGN KEY (booking_id) REFERENCES bookings(id)
 );
+
+-- Links each persisted reservation to the authenticated account or guest session
+-- that created it, without changing existing booking rows.
+CREATE TABLE IF NOT EXISTS booking_owners (
+ booking_id VARCHAR(40) PRIMARY KEY,
+ owner_key VARCHAR(80) NOT NULL,
+ FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+ INDEX idx_booking_owners_owner_key (owner_key)
+);
