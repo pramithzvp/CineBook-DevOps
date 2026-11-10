@@ -8,10 +8,10 @@ import java.util.*;
 public class BookingService {
  private final JdbcTemplate db;
  public BookingService(JdbcTemplate db){this.db=db;}
- static final Map<String,List<String>> TIMES=Map.of("dune",List.of("11:00","15:00","19:00"),"interstellar",List.of("10:30","14:30","18:30"),"batman",List.of("11:30","15:30","19:30"));
- static final Map<String,Integer> PRICES=Map.of("dune",2200,"interstellar",1500,"batman",1800);
+ static final Map<String,List<String>> TIMES=Map.of("dune",List.of("11:00","15:00","19:00"),"interstellar",List.of("10:30","14:30","18:30"),"batman",List.of("11:30","15:30","19:30"),"spider-man-brand-new-day",List.of("11:00","15:00","19:00"));
+ static final Map<String,Integer> PRICES=Map.of("dune",2200,"interstellar",1500,"batman",1800,"spider-man-brand-new-day",1800);
  void validateShow(String movie,String date,String time,String cinema){
-  if(!TIMES.containsKey(movie)||!TIMES.get(movie).contains(time)||!Set.of("colombo","kandy").contains(cinema))throw new IllegalArgumentException("Choose a valid movie, cinema and showtime.");
+  if(!TIMES.containsKey(movie)||!TIMES.get(movie).contains(time)||!Set.of("colombo","kandy","scope-havelock","scope-ccc").contains(cinema))throw new IllegalArgumentException("Choose a valid movie, cinema and showtime.");
   LocalDate d;try{d=LocalDate.parse(date);}catch(Exception ex){throw new IllegalArgumentException("Choose a valid date.");}
   ZonedDateTime now=ZonedDateTime.now(ZoneId.of("Asia/Colombo"));
   if(d.isBefore(now.toLocalDate())||d.isAfter(now.toLocalDate().plusDays(6))||!LocalDateTime.of(d,LocalTime.parse(time)).isAfter(now.toLocalDateTime()))throw new IllegalArgumentException("Choose an upcoming show within the next 7 days.");
