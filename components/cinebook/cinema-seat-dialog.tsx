@@ -6,6 +6,7 @@ import {CINEMA_LISTINGS} from '@/lib/cinema-listings';
 import {Booking,Profile,CINEMAS,dateLabel,money} from '@/lib/cinebook';
 import {api,ApiShow,ApiSeat,ApiError} from '@/lib/booking-api';
 import TicketView from './ticket-view';
+const BOOKABLE_CINEMAS = CINEMAS.filter(c => c.id === 'scope-havelock' || c.id === 'scope-ccc');
 export default function CinemaSeatDialog({movieId,initialCinema,profile,onBooked,onClose,onHistory}:{movieId:string;initialCinema:string;profile:Profile|null;bookings:Booking[];onBooked:(booking:Booking)=>void;onClose:()=>void;onHistory:()=>void}){
  const movie=CINEMA_LISTINGS.find(m=>m.id===movieId)!;
  const [cinema,setCinema]=useState(initialCinema),[shows,setShows]=useState<ApiShow[]>([]),[showId,setShowId]=useState('');
@@ -36,12 +37,12 @@ export default function CinemaSeatDialog({movieId,initialCinema,profile,onBooked
   <DialogDescription>Sample cinema programme. Reservations are saved in CineBook’s database. These are not cinema-issued tickets; no payment is collected.</DialogDescription>
   {receipt?<><TicketView booking={receipt}/><button className="primary" onClick={onHistory}>View my bookings</button></>:<>
    <fieldset disabled={busy} className="cinema-booking-fields" style={{border:0,padding:0}}>
-    <label>Cinema<Select value={cinema} onValueChange={v=>{setCinema(v);}} disabled={busy}><SelectTrigger aria-label="Booking cinema"><SelectValue/></SelectTrigger><SelectContent>{CINEMAS.map(c=><SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></label>
+    <label>Cinema<Select value={cinema} onValueChange={v=>{setCinema(v);}} disabled={busy}><SelectTrigger aria-label="Booking cinema"><SelectValue/></SelectTrigger><SelectContent>{BOOKABLE_CINEMAS.map(c=><SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></label>
     <label>Date<Select value={show?.date||''} onValueChange={v=>setShowId(shows.find(s=>s.date===v)!.id)} disabled={busy||!shows.length}><SelectTrigger aria-label="Booking date"><SelectValue placeholder="Choose a date"/></SelectTrigger><SelectContent>{dates.map(d=><SelectItem key={d} value={d}>{dateLabel(d)}</SelectItem>)}</SelectContent></Select></label>
     <label>Showtime<Select value={showId} onValueChange={setShowId} disabled={busy||!shows.length}><SelectTrigger aria-label="Booking time"><SelectValue placeholder="Choose a show"/></SelectTrigger><SelectContent>{shows.filter(s=>s.date===show?.date).map(s=><SelectItem key={s.id} value={s.id}>{s.time}</SelectItem>)}</SelectContent></Select></label>
    </fieldset>
    {loading?<p role="status">Loading available seats…</p>:!shows.length?<p>{error?'Availability is unavailable.':'No upcoming shows are available for this cinema.'}</p>:review?<form id="reservation-contact" onSubmit={e=>{e.preventDefault();void confirm();}} className="seat-review">
-    <h3>Review your reservation</h3><p>{CINEMAS.find(c=>c.id===cinema)?.name} · {show?.hall}</p><p>{dateLabel(show!.date)} · {show?.time}</p><p>Seats: <strong>{seats.join(', ')}</strong></p><p>Total: <strong>{money(total)}</strong></p>
+    <h3>Review your reservation</h3><p>{BOOKABLE_CINEMAS.find(c=>c.id===cinema)?.name} · {show?.hall}</p><p>{dateLabel(show!.date)} · {show?.time}</p><p>Seats: <strong>{seats.join(', ')}</strong></p><p>Total: <strong>{money(total)}</strong></p>
     <label>Your name<input className="booking-contact-input" aria-label="Your name" required maxLength={100} value={name} disabled={busy} onChange={e=>{setName(e.target.value);requestKey.current='';}}/></label>
     <label>Email<input className="booking-contact-input" aria-label="Booking email" type="email" required maxLength={200} value={email} disabled={busy} onChange={e=>{setEmail(e.target.value);requestKey.current='';}}/></label>
     <p className="helper">Your booking is saved in the database. Sign in to keep access across browsers, or use this browser’s guest session for up to 30 days. No email or payment is sent.</p>
